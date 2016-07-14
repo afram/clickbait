@@ -1,0 +1,66 @@
+var DEBUG = false;
+
+var TIME_FLASHED;
+var HIGH_SCORE = Infinity;
+var max = 5,
+    min = 1;
+
+
+function log() {
+  if (DEBUG) {
+    console.log.apply(null, arguments);
+  }
+}
+
+
+function randomInt(){
+ return Math.floor((Math.random() * (max - min) + min) * 1000);
+}
+
+var on = false;
+function toggle() {
+  on = !on;
+  LED1.write(on);
+}
+
+function flashLight() {
+  toggle();
+  setTimeout(toggle, 100);
+}
+
+function waitForUserInput() {
+  setWatch(function() {
+    log("[debug] Button pressed");
+    var totalTime = Math.floor(Date.now() - TIME_FLASHED);
+    if (totalTime < HIGH_SCORE) {
+      console.log('***NEW HIGH SCORE!***');
+    }
+    HIGH_SCORE = Math.min(totalTime, HIGH_SCORE);
+    console.log('Your score is: ', totalTime + 'ms');
+    nextRound();
+  }, BTN, { repeat: false, edge: 'rising', debounce: 50 });
+}
+
+function currentRound() {
+  flashLight();
+  TIME_FLASHED = Date.now();
+  waitForUserInput();
+}
+
+function nextRound() {
+  var waitTime = randomInt();
+  log('[debug] wait time: ', waitTime);
+  setTimeout(currentRound, waitTime);
+}
+
+function runGame(){
+  console.log('Welcome to CLICK BAIT! press the button to start the game...');
+  
+  setWatch(function() {
+    log("[debug] Game started");
+    console.log('Away we go, get ready!');
+    setTimeout(currentRound, randomInt());
+  }, BTN, { repeat: false, edge: 'rising', debounce: 50 });
+}
+
+runGame();
